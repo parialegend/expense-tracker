@@ -1,0 +1,145 @@
+<section class="row transaction-form">
+  <div class="col-md-12">
+    <form ng-submit="main.addTxn(txnForm)" name="txnForm">
+      <div class="col-md-8" style="margin-bottom: 10px;">
+        <div class="col-md-3">
+          <div class="btn-group full-width" uib-dropdown is-open="status.isopen">
+            <button id="single-button" type="button" class="btn btn-primary full-width" uib-dropdown-toggle ng-disabled="disabled">
+              {{main.selectedAction}}<span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button"
+            >
+              <li role="menuitem" ng-repeat="option in main.txnOptions">
+                <a href ng-click="main.setAction(option.value)">{{option.name}}</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <input type="text" placeholder="Amount (in Rs)" class="form-control full-width" ng-model="main.balance"/>
+        </div> 
+        <div class="col-md-3">
+          <div class="btn-group full-width" uib-dropdown dropdown-append-to-body>
+                <button id="btn-append-to-body" type="button" class="btn btn-primary full-width" uib-dropdown-toggle>
+                  {{main.selectedAccount.account}} <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-body"
+                >
+                  <li role="menuitem" ng-repeat="account in main.accounts">
+                    <a href ng-click="main.setAccount(account)">{{account.account}}</a>
+                  </li>
+                </ul>
+              </div>
+        </div>
+        <div class="col-md-3" ng-if="main.selectedAction === 'transfer'">
+          <div class="btn-group full-width" uib-dropdown dropdown-append-to-body>
+                <button id="btn-append-to-body-1" type="button" class="btn btn-primary full-width" uib-dropdown-toggle>
+                  {{main.selectedToAccount.account}} <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-body-1"
+                >
+                  <li role="menuitem" ng-repeat="account in main.accounts">
+                    <a href ng-click="main.setToAccount(account)">{{account.account}}</a>
+                  </li>
+                </ul>
+              </div>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="col-md-12">
+          <div class="full-width">
+            <tags-input ng-model="main.tags"></tags-input>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4" style="margin-top: 5px;">
+        <button class="btn btn-primary btn-success btn-block" type="submit">Add</button>
+      </div>
+    </form>
+  </div>
+</section>
+<section class="row">
+  <div class="col-md-2" id="sidebar">
+    <form class="form-inline" ng-if="main.addingAccount" id="sidebar-form">
+      <div class="form-group">
+        <input ng-model="main.newAccount.account" type="text" class="form-control input-sm full-width" id="account-name" placeholder="Account Name">
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" ng-click="main.addAccountInfo()">Add Account</button>
+      <button type="button" class="btn btn-warning btn-sm" ng-click="main.cancelAddingAccount()">Cancel</button>
+    </form>
+    <h4><button class="btn btn-primary btn-sm" ng-click="main.addAccount()">+</button> Accounts <small>{{main.totalBalance || '0'}}</small></h4>
+    <ul ng-repeat="account in main.accounts" class="no-list-style p-l-0">
+      <li class="">
+        <a href>{{account.account}} <span class="pull-right">{{account.amount || '0'}}</span></a>
+      </li>
+    </ul>
+  </div>
+  <div class="col-md-10">
+    <table ng-table="main.tableParams" class="table table-bordered table-hover table-condensed editable-table demoTable" show-filter="true">
+        <tr ng-repeat="txn in $data">
+            <td title="'Txn Type'" filter="{ action: 'text'}" sortable="'action'">
+                {{txn.action}}</td>
+            <td title="'Amount'" sortable="'amount'">
+                {{txn.amount}}</td>
+            <td title="'From'" filter="{ 'selectedAccount.account': 'text'}" sortable="'selectedAccount.account'">
+                {{txn.selectedAccount.account}}</td>
+            <td title="'To'" filter="{ 'selectedToAccount.account': 'text'}" sortable="'selectedToAccount.account'">
+                {{txn.selectedToAccount.account}}</td>
+            <td title="'Tags'" filter="{ 'tags': 'text'}" sortable="'tags'">
+                {{txn.tags.join()}}</td>
+            <td>
+              <button class="btn btn-warning btn-sm" ng-click="main.open(txn)">edit</button>
+              <button class="btn btn-danger btn-sm">delete</button>
+            </td>
+                
+        </tr>
+    </table>
+  </div>
+</section>
+
+<script type="text/ng-template" id="myModalContent.html">
+       <div class="modal-header">
+           <h3 class="modal-title">Edit Transaction Info</h3>
+       </div>
+       <div class="modal-body">
+           <form>
+                <div class="form-group">
+                  <input type="text" class="form-control" ng-model="selectedAction" disabled>
+                </div>
+               <div class="form-group">
+                 <input type="text" class="form-control" placeholder="Amount" ng-model="balance">
+               </div>
+               <div class="form-group">
+                 <div class="btn-group" uib-dropdown on-toggle="toggled(open)">
+                       <button id="single-button-x" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
+                         {{selectedAccount.account}} <span class="caret"></span>
+                       </button>
+                       <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button-x">
+                         <li role="menuitem" ng-repeat="account in accounts">
+                           <a href ng-click="setAccount(account)">{{account.account}}</a>
+                         </li>
+                       </ul>
+                     </div>
+               </div>
+               <div class="form-group" ng-if="txn.action === 'transfer'">
+                 <div class="btn-group" uib-dropdown on-toggle="toggled(open)">
+                       <button id="single-button-y" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
+                         {{selectedToAccount.account}} <span class="caret"></span>
+                       </button>
+                       <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button-y">
+                         <li role="menuitem" ng-repeat="account in accounts">
+                           <a href ng-click="setToAccount(account)">{{account.account}}</a>
+                         </li>
+                       </ul>
+                     </div>
+               </div>
+               <div class="form-group">
+                 <tags-input ng-model="newTags"></tags-input>
+               </div>
+           </form>
+       </div>
+       <div class="modal-footer">
+           <button class="btn btn-primary" type="button" ng-click="ok()">OK</button>
+           <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+       </div>
+   </script>
